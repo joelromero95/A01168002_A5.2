@@ -111,3 +111,40 @@ def build_price_catalog(raw_catalog: Any) -> Dict[str, float]:
         prices[title.strip()] = float(price)
 
     return prices
+
+
+def parse_sales(raw_sales: Any) -> List[SaleLine]:
+    """
+    Convierte el JSON de ventas (lista de dicts) a una lista validada de SaleLine.
+    Reporta entradas inválidas y continúa.
+    """
+    parsed: List[SaleLine] = []
+
+    if not isinstance(raw_sales, list):
+        print("[ERROR] El archivo de ventas debe ser una lista de registros.")
+        return parsed
+
+    for idx, item in enumerate(raw_sales, start=1):
+        if not isinstance(item, dict):
+            print(f"[ERROR] Venta #{idx}: se esperaba un objeto JSON (dict).")
+            continue
+
+        sale_id = item.get("SALE_ID")
+        product = item.get("Product")
+        quantity = item.get("Quantity")
+
+        if not isinstance(sale_id, int):
+            print(f"[ERROR] Venta #{idx}: 'SALE_ID' inválido.")
+            continue
+
+        if not isinstance(product, str) or not product.strip():
+            print(f"[ERROR] Venta #{idx}: 'Product' inválido o vacío.")
+            continue
+
+        if not isinstance(quantity, int) or quantity < 0:
+            print(f"[ERROR] Venta #{idx}: 'Quantity' inválido (debe ser int >= 0).")
+            continue
+
+        parsed.append(SaleLine(sale_id=sale_id, product=product.strip(), quantity=quantity))
+
+    return parsed
