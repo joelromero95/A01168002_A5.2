@@ -176,3 +176,31 @@ def compute_totals(
         grand_total += line_total
 
     return totals_by_sale, grand_total
+
+
+def format_report(
+    totals_by_sale: Dict[int, float],
+    grand_total: float,
+    elapsed_seconds: float,
+) -> str:
+    """
+    Genera un texto legible para humanos con:
+    - Totales por venta (SALE_ID)
+    - Total general
+    - Tiempo transcurrido
+    """
+    lines: List[str] = []
+    lines.append("=== Sales Results ===")
+    lines.append("")
+    lines.append("Totales por SALE_ID:")
+    if totals_by_sale:
+        for sale_id in sorted(totals_by_sale.keys()):
+            lines.append(f"  - SALE_ID {sale_id}: ${totals_by_sale[sale_id]:,.2f}")
+    else:
+        lines.append("  (No se pudieron calcular totales por SALE_ID)")
+
+    lines.append("")
+    lines.append(f"TOTAL GENERAL: ${grand_total:,.2f}")
+    lines.append(f"Tiempo transcurrido: {elapsed_seconds:.6f} segundos")
+    lines.append("")
+    return "\n".join(lines)
