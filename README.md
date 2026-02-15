@@ -71,18 +71,28 @@ pip install flake8 pylint
 Desde la raíz del repositorio:
 
 PowerShell (Windows)
+```bash
 python .\source\computeSales.py .\tests\TC1\TC1.ProductList.json .\tests\TC1\TC1.Sales.json
+```
 (Repite con TC2/TC3 ajustando la ruta de los archivos JSON.)
+
+---
 
 ## Archivos generados (salida)
 
 El programa genera archivos dentro de results/:
 
+```bash
 <TC>_SalesResults.txt
+```
 Resultado asociado al caso de prueba (por ejemplo: TC1_SalesResults.txt).
 
+```bash
 <TC>_Console.txt
+```
 Captura de todo lo impreso en consola durante la ejecución (por ejemplo: TC1_Console.txt).
+
+---
 
 ## Análisis estático
 
@@ -90,13 +100,20 @@ flake8
 
 Ejecuta validaciones de estilo PEP8 y errores comunes:
 
+```bash
 flake8 source
+```
 
 pylint
 
 Ejecuta análisis más estricto de calidad/estilo:
 
+```bash
 pylint source/computeSales.py
+```
+
+
+---
 
 ## Notas de validación
 
