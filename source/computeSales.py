@@ -283,8 +283,11 @@ def main(argv: List[str]) -> int:
 
             return return_code
     finally:
-        # Asegurar que stdout regresa a la normalidad aunque ocurra excepción.
-        sys.stdout = sys.__stdout__
+        # Regresa stdout al que estaba antes (VSCode lo maneja distinto a sys.__stdout__).
+        if "original_stdout" in locals():
+            sys.stdout = original_stdout
+        else:
+            sys.stdout = sys.__stdout__
 
     # Nota: realmente nunca llega aquí por los returns dentro del try.
     # Se deja por claridad.
