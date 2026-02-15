@@ -1,0 +1,19 @@
+[WARN] Venta #33: 'Quantity' negativo (-35). Se interpretará como devolución
+[WARN] Venta #45: 'Quantity' negativo (-123). Se interpretará como devolución
+=== Sales Results ===
+
+Totales por SALE_ID:
+  - SALE_ID 1: $4,969.25
+  - SALE_ID 2: $6,352.61
+  - SALE_ID 3: $7,163.70
+  - SALE_ID 4: $11,838.37
+  - SALE_ID 5: $6,829.96
+  - SALE_ID 6: $5,729.60
+  - SALE_ID 7: $923.48
+  - SALE_ID 8: $19,848.61
+  - SALE_ID 9: $10,756.69
+  - SALE_ID 10: $92,155.96
+
+TOTAL GENERAL: $166,568.23
+Tiempo transcurrido: 0.001008 segundos
+

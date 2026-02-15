@@ -1,0 +1,16 @@
+=== Sales Results ===
+
+Totales por SALE_ID:
+  - SALE_ID 1: $83.39
+  - SALE_ID 2: $67.57
+  - SALE_ID 3: $144.74
+  - SALE_ID 4: $87.23
+  - SALE_ID 5: $94.33
+  - SALE_ID 6: $239.04
+  - SALE_ID 7: $182.11
+  - SALE_ID 8: $407.30
+  - SALE_ID 9: $851.43
+  - SALE_ID 10: $324.72
+
+TOTAL GENERAL: $2,481.86
+Tiempo transcurrido: 0.000640 segundos

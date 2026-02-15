@@ -16,7 +16,6 @@ Requisitos clave:
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
 from dataclasses import dataclass
@@ -141,9 +140,15 @@ def parse_sales(raw_sales: Any) -> List[SaleLine]:
             print(f"[ERROR] Venta #{idx}: 'Product' inválido o vacío.")
             continue
 
-        if not isinstance(quantity, int) or quantity < 0:
-            print(f"[ERROR] Venta #{idx}: 'Quantity' inválido (debe ser int >= 0).")
+        if not isinstance(quantity, int):
+            print(f"[ERROR] Venta #{idx}: 'Quantity' inválido (debe ser int).")
             continue
+
+        if quantity < 0: 
+            print(
+                f"[WARN] Venta #{idx}: 'Quantity' negativo ({quantity}). "
+                "Se interpretará como devolución"
+            )
 
         parsed.append(SaleLine(sale_id=sale_id, product=product.strip(), quantity=quantity))
 
@@ -292,3 +297,7 @@ def main(argv: List[str]) -> int:
     # Nota: realmente nunca llega aquí por los returns dentro del try.
     # Se deja por claridad.
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))
