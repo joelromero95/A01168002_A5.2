@@ -66,3 +66,16 @@ def safe_load_json(path: Path) -> Optional[Any]:
     except OSError as exc:
         print(f"[ERROR] No se pudo leer {path}: {exc}")
     return None
+
+
+def extract_tc_code(path: Path) -> str:
+    """
+    Obtiene el código del caso de prueba desde el nombre de archivo.
+    Ejemplo: 'TC1.ProductList.json' -> 'TC1'
+    Si no se detecta, regresa 'RUN'.
+    """
+    name = path.name
+    if "." in name:
+        candidate = name.split(".", maxsplit=1)[0].strip()
+        return candidate or "RUN"
+    return "RUN"
