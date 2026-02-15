@@ -148,3 +148,31 @@ def parse_sales(raw_sales: Any) -> List[SaleLine]:
         parsed.append(SaleLine(sale_id=sale_id, product=product.strip(), quantity=quantity))
 
     return parsed
+
+
+def compute_totals(
+    prices: Dict[str, float],
+    sales: Iterable[SaleLine],
+) -> Tuple[Dict[int, float], float]:
+    """
+    Calcula:
+    - total por SALE_ID
+    - total general
+    Si un producto no existe en el catálogo, reporta error y continúa.
+    """
+    totals_by_sale: Dict[int, float] = {}
+    grand_total = 0.0
+
+    for line in sales:
+        if line.product not in prices:
+            print(
+                "[ERROR] Producto no encontrado en el catálogo: "
+                f"'{line.product}' (SALE_ID={line.sale_id})"
+            )
+            continue
+
+        line_total = prices[line.product] * line.quantity
+        totals_by_sale[line.sale_id] = totals_by_sale.get(line.sale_id, 0.0) + line_total
+        grand_total += line_total
+
+    return totals_by_sale, grand_total
