@@ -1,9 +1,11 @@
+# pylint: disable=invalid-name
 """
 computeSales.py
 
 Calcula el costo total de ventas a partir de:
 1) Un catálogo de precios en JSON (lista de productos con 'title' y 'price')
-2) Un registro de ventas en JSON (lista de ventas con 'SALE_ID', 'Product', 'Quantity', etc.)
+2) Un registro de ventas en JSON (lista de ventas con 'SALE_ID',
+'Product', 'Quantity', etc.)
 
 Requisitos clave:
 - Invocación por línea de comandos con 2 archivos
@@ -88,12 +90,16 @@ def build_price_catalog(raw_catalog: Any) -> Dict[str, float]:
     prices: Dict[str, float] = {}
 
     if not isinstance(raw_catalog, list):
-        print("[ERROR] El catálogo de precios debe ser una lista de productos.")
+        print(
+            "[ERROR] El catálogo de precios debe ser una lista de productos."
+        )
         return prices
 
     for idx, item in enumerate(raw_catalog, start=1):
         if not isinstance(item, dict):
-            print(f"[ERROR] Producto #{idx}: se esperaba un objeto JSON (dict).")
+            print(
+                f"[ERROR] Producto #{idx}: se esperaba un objeto JSON (dict)."
+            )
             continue
 
         title = item.get("title")
@@ -114,7 +120,8 @@ def build_price_catalog(raw_catalog: Any) -> Dict[str, float]:
 
 def parse_sales(raw_sales: Any) -> List[SaleLine]:
     """
-    Convierte el JSON de ventas (lista de dicts) a una lista validada de SaleLine.
+    Convierte el JSON de ventas (lista de dicts)
+    a una lista validada de SaleLine.
     Reporta entradas inválidas y continúa.
     """
     parsed: List[SaleLine] = []
@@ -144,13 +151,19 @@ def parse_sales(raw_sales: Any) -> List[SaleLine]:
             print(f"[ERROR] Venta #{idx}: 'Quantity' inválido (debe ser int).")
             continue
 
-        if quantity < 0: 
+        if quantity < 0:
             print(
                 f"[WARN] Venta #{idx}: 'Quantity' negativo ({quantity}). "
                 "Se interpretará como devolución"
             )
 
-        parsed.append(SaleLine(sale_id=sale_id, product=product.strip(), quantity=quantity))
+        parsed.append(
+            SaleLine(
+                sale_id=sale_id,
+                product=product.strip(),
+                quantity=quantity,
+            )
+        )
 
     return parsed
 
@@ -177,7 +190,9 @@ def compute_totals(
             continue
 
         line_total = prices[line.product] * line.quantity
-        totals_by_sale[line.sale_id] = totals_by_sale.get(line.sale_id, 0.0) + line_total
+        totals_by_sale[line.sale_id] = (
+            totals_by_sale.get(line.sale_id, 0.0) + line_total
+        )
         grand_total += line_total
 
     return totals_by_sale, grand_total
@@ -200,7 +215,10 @@ def format_report(
     lines.append("Totales por SALE_ID:")
     if totals_by_sale:
         for sale_id in sorted(totals_by_sale.keys()):
-            lines.append(f"  - SALE_ID {sale_id}: ${totals_by_sale[sale_id]:,.2f}")
+            lines.append(
+                f"  - SALE_ID {sale_id}: "
+                f"${totals_by_sale[sale_id]:,.2f}"
+            )
     else:
         lines.append("  (No se pudieron calcular totales por SALE_ID)")
 
@@ -240,7 +258,8 @@ def main(argv: List[str]) -> int:
     catalog_path = Path(argv[1])
     sales_path = Path(argv[2])
 
-    # Código del caso de prueba (TC1, TC2, etc.) basado en el nombre del archivo.
+    # Código del caso de prueba (TC1, TC2, etc.)
+    # basado en el nombre del archivo.
     tc_code = extract_tc_code(catalog_path)
 
     results_dir = Path("results")
@@ -267,12 +286,17 @@ def main(argv: List[str]) -> int:
             raw_sales = safe_load_json(sales_path)
 
             if raw_catalog is None or raw_sales is None:
-                print("[ERROR] No se pudo cargar uno o ambos archivos de entrada.")
+                print(
+                    "[ERROR] No se pudo cargar uno o ambos "
+                    "archivos de entrada."
+                )
                 return_code = 2
             else:
                 prices = build_price_catalog(raw_catalog)
                 parsed_sales = parse_sales(raw_sales)
-                totals_by_sale, grand_total = compute_totals(prices, parsed_sales)
+                totals_by_sale, grand_total = (
+                    compute_totals(prices, parsed_sales)
+                )
 
                 elapsed = time.perf_counter() - start
                 report = format_report(totals_by_sale, grand_total, elapsed)
@@ -288,7 +312,7 @@ def main(argv: List[str]) -> int:
 
             return return_code
     finally:
-        # Regresa stdout al que estaba antes (VSCode lo maneja distinto a sys.__stdout__).
+        # Regresa stdout al que estaba antes.
         if "original_stdout" in locals():
             sys.stdout = original_stdout
         else:
