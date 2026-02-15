@@ -204,3 +204,8 @@ def format_report(
     lines.append(f"Tiempo transcurrido: {elapsed_seconds:.6f} segundos")
     lines.append("")
     return "\n".join(lines)
+
+
+def ensure_dir(path: Path) -> None:
+    """Crea el directorio si no existe."""
+    path.mkdir(parents=True, exist_ok=True)
