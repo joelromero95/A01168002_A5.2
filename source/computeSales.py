@@ -13,3 +13,13 @@ Requisitos clave:
 - Cumple PEP8/flake8 y evita problemas comunes de pylint
 """
 
+from __future__ import annotations
+
+import json
+import os
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, TextIO, Tuple
+
