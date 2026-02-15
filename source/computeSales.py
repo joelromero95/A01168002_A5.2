@@ -79,3 +79,35 @@ def extract_tc_code(path: Path) -> str:
         candidate = name.split(".", maxsplit=1)[0].strip()
         return candidate or "RUN"
     return "RUN"
+
+
+def build_price_catalog(raw_catalog: Any) -> Dict[str, float]:
+    """
+    Convierte el JSON del catálogo (lista de dicts) a un mapa: title -> price.
+    Reporta entradas inválidas y continúa.
+    """
+    prices: Dict[str, float] = {}
+
+    if not isinstance(raw_catalog, list):
+        print("[ERROR] El catálogo de precios debe ser una lista de productos.")
+        return prices
+
+    for idx, item in enumerate(raw_catalog, start=1):
+        if not isinstance(item, dict):
+            print(f"[ERROR] Producto #{idx}: se esperaba un objeto JSON (dict).")
+            continue
+
+        title = item.get("title")
+        price = item.get("price")
+
+        if not isinstance(title, str) or not title.strip():
+            print(f"[ERROR] Producto #{idx}: 'title' inválido o vacío.")
+            continue
+
+        if not isinstance(price, (int, float)):
+            print(f"[ERROR] Producto '{title}': 'price' no es numérico.")
+            continue
+
+        prices[title.strip()] = float(price)
+
+    return prices
