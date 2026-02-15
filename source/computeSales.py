@@ -23,3 +23,32 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, TextIO, Tuple
 
+
+@dataclass(frozen=True)
+class SaleLine:
+    """Representa una línea/registro de venta ya validada."""
+    sale_id: int
+    product: str
+    quantity: int
+
+
+class TeeOutput:
+    """
+    Replica todo lo que se imprime (write) a múltiples streams.
+    Útil para guardar lo que sale en consola en un .txt.
+    """
+
+    def __init__(self, streams: List[TextIO]) -> None:
+        self._streams = streams
+
+    def write(self, message: str) -> int:
+        for stream in self._streams:
+            stream.write(message)
+            stream.flush()
+        return len(message)
+
+    def flush(self) -> None:
+        for stream in self._streams:
+            stream.flush()
+
+
