@@ -35,7 +35,6 @@ class SaleLine:
 class TeeOutput:
     """
     Replica todo lo que se imprime (write) a múltiples streams.
-    Útil para guardar lo que sale en consola en un .txt.
     """
 
     def __init__(self, streams: List[TextIO]) -> None:
@@ -52,3 +51,18 @@ class TeeOutput:
             stream.flush()
 
 
+def safe_load_json(path: Path) -> Optional[Any]:
+    """
+    Carga JSON de forma segura.
+    - Si hay error, lo imprime y regresa None.
+    """
+    try:
+        with path.open("r", encoding="utf-8") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(f"[ERROR] Archivo no encontrado: {path}")
+    except json.JSONDecodeError as exc:
+        print(f"[ERROR] JSON inválido en {path}: {exc}")
+    except OSError as exc:
+        print(f"[ERROR] No se pudo leer {path}: {exc}")
+    return None
