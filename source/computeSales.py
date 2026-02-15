@@ -209,3 +209,14 @@ def format_report(
 def ensure_dir(path: Path) -> None:
     """Crea el directorio si no existe."""
     path.mkdir(parents=True, exist_ok=True)
+
+
+def write_text_file(path: Path, content: str) -> None:
+    """Escribe texto en archivo (UTF-8) de forma segura."""
+    try:
+        with path.open("w", encoding="utf-8") as file:
+            file.write(content)
+    except OSError as exc:
+        print(f"[ERROR] No se pudo escribir el archivo {path}: {exc}")
+
+
