@@ -220,3 +220,72 @@ def write_text_file(path: Path, content: str) -> None:
         print(f"[ERROR] No se pudo escribir el archivo {path}: {exc}")
 
 
+def main(argv: List[str]) -> int:
+    """
+    Punto de entrada.
+    Devuelve código de salida:
+    0 = OK (aunque haya errores recuperables de datos)
+    2 = uso incorrecto / archivos no cargables
+    """
+    if len(argv) != 3:
+        print("Uso:")
+        print("  python computeSales.py priceCatalogue.json salesRecord.json")
+        return 2
+
+    catalog_path = Path(argv[1])
+    sales_path = Path(argv[2])
+
+    # Código del caso de prueba (TC1, TC2, etc.) basado en el nombre del archivo.
+    tc_code = extract_tc_code(catalog_path)
+
+    results_dir = Path("results")
+    ensure_dir(results_dir)
+
+    # Archivos requeridos:
+    # - SalesResults.txt (por especificación)
+    # - TCx_SalesResults.txt (por tu requisito extra)
+    results_file_required = results_dir / "SalesResults.txt"
+    results_file_tc = results_dir / f"{tc_code}_SalesResults.txt"
+
+    # Guardar lo impreso en consola:
+    console_log_file = results_dir / f"{tc_code}_Console.txt"
+
+    # Preparamos "tee" para que lo que se imprime salga a consola y a archivo.
+    try:
+        with console_log_file.open("w", encoding="utf-8") as console_file:
+            original_stdout = sys.stdout
+            sys.stdout = TeeOutput([original_stdout, console_file])
+
+            start = time.perf_counter()
+
+            raw_catalog = safe_load_json(catalog_path)
+            raw_sales = safe_load_json(sales_path)
+
+            if raw_catalog is None or raw_sales is None:
+                print("[ERROR] No se pudo cargar uno o ambos archivos de entrada.")
+                return_code = 2
+            else:
+                prices = build_price_catalog(raw_catalog)
+                parsed_sales = parse_sales(raw_sales)
+                totals_by_sale, grand_total = compute_totals(prices, parsed_sales)
+
+                elapsed = time.perf_counter() - start
+                report = format_report(totals_by_sale, grand_total, elapsed)
+
+                # Imprimir a consola (y se irá también al Console.txt)
+                print(report)
+
+                # Escribir reportes a archivo (requerido + por TC)
+                write_text_file(results_file_required, report)
+                write_text_file(results_file_tc, report)
+
+                return_code = 0
+
+            return return_code
+    finally:
+        # Asegurar que stdout regresa a la normalidad aunque ocurra excepción.
+        sys.stdout = sys.__stdout__
+
+    # Nota: realmente nunca llega aquí por los returns dentro del try.
+    # Se deja por claridad.
+    return 0
