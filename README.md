@@ -63,7 +63,7 @@ python -m venv .venv
 .\.venv\Scripts\activate
 pip install -U pip
 pip install flake8 pylint
-
+```
 ---
 
 ## Ejecución del programa
