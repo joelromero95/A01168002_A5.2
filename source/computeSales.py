@@ -42,14 +42,34 @@ class TeeOutput:
         self._streams = streams
 
     def write(self, message: str) -> int:
+        """Escribe el mensaje en todos los streams y
+        regresa la longitud escrita."""
         for stream in self._streams:
             stream.write(message)
             stream.flush()
         return len(message)
 
     def flush(self) -> None:
+        """Fuerza el vaciado (flush) de todos los streams configurados."""
         for stream in self._streams:
             stream.flush()
+
+
+@dataclass(frozen=True)
+class OutputPaths:
+    """Rutas de salida para resultados y logs."""
+    results_required: Path
+    results_tc: Path
+    console_log: Path
+
+
+def build_output_paths(tc_code: str, results_dir: Path) -> OutputPaths:
+    """Construye rutas de salida en función del código del test case."""
+    return OutputPaths(
+        results_required=results_dir / "SalesResults.txt",
+        results_tc=results_dir / f"{tc_code}_SalesResults.txt",
+        console_log=results_dir / f"{tc_code}_Console.txt",
+    )
 
 
 def safe_load_json(path: Path) -> Optional[Any]:
@@ -243,6 +263,33 @@ def write_text_file(path: Path, content: str) -> None:
         print(f"[ERROR] No se pudo escribir el archivo {path}: {exc}")
 
 
+def _compute_report_body(
+        catalog_path: Path,
+        sales_path: Path,
+) -> Optional[str]:
+    """Calcula el reporte sin incluir el tiempo.
+    Regresa None si falla la carga."""
+    raw_catalog = safe_load_json(catalog_path)
+    raw_sales = safe_load_json(sales_path)
+
+    if raw_catalog is None or raw_sales is None:
+        return None
+
+    prices = build_price_catalog(raw_catalog)
+    parsed_sales = parse_sales(raw_sales)
+    totals_by_sale, grand_total = compute_totals(prices, parsed_sales)
+
+    return format_report(totals_by_sale, grand_total, 0.0)
+
+
+def _add_elapsed_to_report(report: str, elapsed: float) -> str:
+    """Reemplaza el tiempo en el reporte con el tiempo real medido."""
+    return report.replace(
+        "Tiempo transcurrido: 0.000000 segundos",
+        f"Tiempo transcurrido: {elapsed:.6f} segundos",
+    )
+
+
 def main(argv: List[str]) -> int:
     """
     Punto de entrada.
@@ -258,69 +305,36 @@ def main(argv: List[str]) -> int:
     catalog_path = Path(argv[1])
     sales_path = Path(argv[2])
 
-    # Código del caso de prueba (TC1, TC2, etc.)
-    # basado en el nombre del archivo.
     tc_code = extract_tc_code(catalog_path)
 
     results_dir = Path("results")
     ensure_dir(results_dir)
+    paths = build_output_paths(tc_code, results_dir)
 
-    # Archivos requeridos:
-    # - SalesResults.txt (por especificación)
-    # - TCx_SalesResults.txt (por tu requisito extra)
-    results_file_required = results_dir / "SalesResults.txt"
-    results_file_tc = results_dir / f"{tc_code}_SalesResults.txt"
-
-    # Guardar lo impreso en consola:
-    console_log_file = results_dir / f"{tc_code}_Console.txt"
-
-    # Preparamos "tee" para que lo que se imprime salga a consola y a archivo.
+    original_stdout = sys.stdout
     try:
-        with console_log_file.open("w", encoding="utf-8") as console_file:
-            original_stdout = sys.stdout
+        with paths.console_log.open("w", encoding="utf-8") as console_file:
             sys.stdout = TeeOutput([original_stdout, console_file])
 
             start = time.perf_counter()
+            report_body = _compute_report_body(catalog_path, sales_path)
+            elapsed = time.perf_counter() - start
 
-            raw_catalog = safe_load_json(catalog_path)
-            raw_sales = safe_load_json(sales_path)
-
-            if raw_catalog is None or raw_sales is None:
+            if report_body is None:
                 print(
                     "[ERROR] No se pudo cargar uno o ambos "
                     "archivos de entrada."
                 )
-                return_code = 2
-            else:
-                prices = build_price_catalog(raw_catalog)
-                parsed_sales = parse_sales(raw_sales)
-                totals_by_sale, grand_total = (
-                    compute_totals(prices, parsed_sales)
-                )
+                return 2
 
-                elapsed = time.perf_counter() - start
-                report = format_report(totals_by_sale, grand_total, elapsed)
+            report = _add_elapsed_to_report(report_body, elapsed)
 
-                # Imprimir a consola (y se irá también al Console.txt)
-                print(report)
-
-                # Escribir reportes a archivo (requerido + por TC)
-                write_text_file(results_file_required, report)
-                write_text_file(results_file_tc, report)
-
-                return_code = 0
-
-            return return_code
+            print(report)
+            write_text_file(paths.results_required, report)
+            write_text_file(paths.results_tc, report)
+            return 0
     finally:
-        # Regresa stdout al que estaba antes.
-        if "original_stdout" in locals():
-            sys.stdout = original_stdout
-        else:
-            sys.stdout = sys.__stdout__
-
-    # Nota: realmente nunca llega aquí por los returns dentro del try.
-    # Se deja por claridad.
-    return 0
+        sys.stdout = original_stdout
 
 
 if __name__ == "__main__":
